@@ -52,25 +52,26 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <label htmlFor="password" className="block text-sm font-medium text-gray-600">
               Password
             </label>
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
+              className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 pr-10"
               placeholder="••••••••"
             />
-             <span
+            <span
               className="absolute right-3 top-[38px] cursor-pointer"
               onClick={() => setShowPassword(!showPassword)}
-              ></span>
+            >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-
+            </span>
           </div>
 
           <div className="flex items-center justify-between">
