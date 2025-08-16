@@ -1,13 +1,16 @@
 'use client';
-import { useState } from 'react';
+
+export const dynamic = "force-dynamic";
+
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/axios';
 
-export default function ConfirmPage() {
+function ConfirmForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email') || '';
-  
+
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,19 +20,18 @@ export default function ConfirmPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
-
     setLoading(true);
+
     try {
       await api.post('/auth/confirm', { email, code });
 
       setSuccess('Account confirmed! You can now log in.');
       setTimeout(() => {
         router.push('/auth/login');
-      }, 2000)
-      // Redirect to login
-    } catch (err: any) {
-      console.log(err);
-      setError(err.response?.data?.message || 'Confirmation failed');
+      }, 2000);
+    } catch (err: unknown) {
+      const errorMessage = (err as any)?.response?.data?.message || 'Confirmation failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,5 +70,13 @@ export default function ConfirmPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfirmForm />
+    </Suspense>
   );
 }
