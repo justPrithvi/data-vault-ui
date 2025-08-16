@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://56.228.19.240:5001/",
 });
 
 export default api;
