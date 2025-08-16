@@ -18,11 +18,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H YOUR_EC2_PUBLIC_IP >> ~/.ssh/known_hosts
+          ssh-keyscan -H 56.228.19.240 >> ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ec2-user@YOUR_EC2_PUBLIC_IP "
+          ssh -i ~/.ssh/id_rsa ubuntu@56.228.19.240 "
             cd data-vault-ui &&
             git pull origin main &&
             npm install &&
