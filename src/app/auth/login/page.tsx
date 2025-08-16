@@ -103,6 +103,12 @@ export default function LoginPage() {
     //   </div>
     // </div>
 
-    <>hello udesh raj</>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 via-cyan-500 to-green-400 animate-gradient-x">
+      <div className="px-8 py-10 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl text-center">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Hello subhashree, <span className="text-pink-600">I love you 💖</span>
+        </h1>
+      </div>
+    </div>
   );
 }
