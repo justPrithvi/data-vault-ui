@@ -4,12 +4,14 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useRouter } from 'next/navigation';
 import api from '@/app/lib/axios';
 
+let logoutFn: (() => void) | null = null; // 👈 global reference
+
 interface AuthContextType {
   user: any;
-  setUser: any;
   accessToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  authContextLoading: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<any>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const router = useRouter();
+  const [authContextLoading, setAuthContextLoading] = useState<boolean>(true);
 
   // On mount, load from localStorage
   useEffect(() => {
@@ -27,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserState(JSON.parse(storedUser));
       setAccessToken(storedToken);
     }
+    setAuthContextLoading(false)
   }, []);
 
   const setUser = (userData: any, token?: string) => {
@@ -44,12 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const data = response.data;
 
       setUser({ email }, data.accessToken); // persist user + token
-      router.push('/dashboard');
+      router.push('/screens/dashboard');
     } catch (err: any) {
       throw new Error(err.response?.data?.message || 'Login failed');
     }
   };
-
   const logout = () => {
     setUserState(null);
     setAccessToken(null);
@@ -57,9 +60,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('accessToken');
     router.push('/auth/login');
   };
+  logoutFn = logout; // 👈 keep global reference updated
 
   return (
-    <AuthContext.Provider value={{ user, setUser, accessToken, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, login, logout, authContextLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -70,3 +74,7 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
+
+export function getLogoutFn() {
+  return logoutFn;
+}
