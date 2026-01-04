@@ -93,7 +93,7 @@ export default function DocumentPage() {
             
             {/* Pagination - Fixed at bottom */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-2 bg-slate-900 border-t border-slate-700 flex-shrink-0">
+              <div className="flex items-center justify-between px-6 py-1 bg-slate-900 border-t border-slate-700 flex-shrink-0">
                 <div className="text-sm text-slate-300 font-medium">
                   Showing <span className="text-purple-400 font-semibold">{rows.length > 0 ? ((currentPage - 1) * limit + 1) : 0}</span> to <span className="text-purple-400 font-semibold">{Math.min(currentPage * limit, total)}</span> of <span className="text-purple-400 font-semibold">{total}</span>
                 </div>
