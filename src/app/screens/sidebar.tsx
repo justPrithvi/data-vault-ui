@@ -9,11 +9,11 @@ export default function Sidebar() {
   const { user } = useAuth();
 
   const menu = [
-    { name: "Dashboard", icon: "📊", href: "dashboard", color: "from-blue-500 to-indigo-600" },
-    { name: "Documents", icon: "📄", href: "document", color: "from-purple-500 to-pink-600" },
-    { name: "Chat", icon: "💬", href: "chat", color: "from-cyan-500 to-blue-600" },
-    { name: "Tags", icon: "🏷️", href: "tags", adminOnly: true, color: "from-green-500 to-emerald-600" },
-    { name: "Settings", icon: "⚙️", href: "settings", color: "from-gray-500 to-slate-600" },
+    { name: "Dashboard", icon: "📊", href: "dashboard", color: "from-indigo-600 to-purple-600" },
+    { name: "Documents", icon: "📄", href: "document", color: "from-indigo-600 to-purple-600" },
+    { name: "Chat", icon: "💬", href: "chat", color: "from-indigo-600 to-purple-600" },
+    { name: "Tags", icon: "🏷️", href: "tags", adminOnly: true, color: "from-indigo-600 to-purple-600" },
+    { name: "Settings", icon: "⚙️", href: "settings", color: "from-indigo-600 to-purple-600" },
   ];
 
   return (

@@ -76,9 +76,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
   };
   
   return (
-    <div className="bg-white h-full overflow-hidden">
+    <div className="bg-slate-800 h-full overflow-hidden">
         <table className="w-full text-base table-fixed border-collapse min-w-0">
-            <thead className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 shadow-lg">
+            <thead className="bg-gradient-to-r from-purple-700 via-pink-700 to-purple-700 shadow-lg">
             <tr>
                 <th 
                   onClick={() => handleSort('fileName')}
@@ -124,17 +124,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                 </th>
             </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-700">
             {sortedRows.length === 0 ? (
               <tr>
                 <td colSpan={isAdmin ? 5 : 4} className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-900 to-pink-900 rounded-full flex items-center justify-center">
                       <span className="text-4xl">📭</span>
                     </div>
                     <div>
-                      <p className="text-slate-600 font-semibold mb-1">No documents uploaded yet</p>
-                      <p className="text-slate-400 text-xs">Click "Upload Document" to get started</p>
+                      <p className="text-slate-300 font-semibold mb-1">No documents uploaded yet</p>
+                      <p className="text-slate-500 text-xs">Click "Upload Document" to get started</p>
                     </div>
                   </div>
                 </td>
@@ -148,27 +148,27 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                     onClick={() => onRowClick?.(document)}
                     className={`group transition-all cursor-pointer ${
                       isSelected 
-                        ? 'bg-gradient-to-r from-purple-100 to-pink-100 border-l-4 border-purple-500 shadow-md' 
-                        : 'hover:bg-purple-50/50 hover:shadow-sm'
+                        ? 'bg-gradient-to-r from-purple-900 to-pink-900 border-l-4 border-purple-500 shadow-md' 
+                        : 'hover:bg-slate-700/50 hover:shadow-sm'
                     }`}>
-                    <td className="px-6 py-1.5 font-semibold text-slate-900 text-left truncate text-sm">
+                    <td className="px-6 py-1.5 font-semibold text-slate-100 text-left truncate text-sm">
                         <div className="flex items-center gap-2">
                           <span className={`text-sm ${isSelected ? 'scale-110' : ''} transition-transform`}>📄</span>
                           {document.fileName}
                         </div>
                     </td>
-                    <td className="px-6 py-1.5 text-slate-600 text-left text-xs truncate">
-                      <span className="px-1.5 py-0.5 bg-slate-100 rounded font-medium text-[10px]">
+                    <td className="px-6 py-1.5 text-slate-300 text-left text-xs truncate">
+                      <span className="px-1.5 py-0.5 bg-slate-700 rounded font-medium text-[10px]">
                         {document.fileType.split('/')[1]?.toUpperCase() || 'FILE'}
                       </span>
                     </td>
-                    <td className="px-6 py-1.5 text-slate-700 text-left font-medium text-xs">
+                    <td className="px-6 py-1.5 text-slate-200 text-left font-medium text-xs">
                       {(document.size / 1024 / 1024).toFixed(2)} MB
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-1.5 text-slate-700 text-left font-medium truncate text-xs">{document.user.name}</td>
+                      <td className="px-6 py-1.5 text-slate-200 text-left font-medium truncate text-xs">{document.user.name}</td>
                     )}
-                    <td className="px-6 py-1.5 text-slate-500 text-left text-[10px]">{new Date(document.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td className="px-6 py-1.5 text-slate-400 text-left text-[10px]">{new Date(document.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                   </tr>
                 );
               })

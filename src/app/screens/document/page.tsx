@@ -72,15 +72,15 @@ export default function DocumentPage() {
   
   return (
     <>
-    <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 h-full overflow-hidden flex flex-col">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 h-full overflow-hidden flex flex-col">
       <div className="flex flex-col gap-4 h-full overflow-hidden">
         {/* Main Content Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-200 flex flex-col flex-1 overflow-hidden max-w-full">
+        <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700 flex flex-col flex-1 overflow-hidden max-w-full">
 
         {/* Main content - Flexible */}
         <div className="flex flex-1 gap-5 px-5 py-4.5 overflow-hidden min-h-0">
           {/* Left Column: Documents Table */}
-          <div className="flex-[0.7] bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col overflow-hidden min-h-0">
+          <div className="flex-[0.7] bg-slate-800 rounded-xl shadow-lg border border-slate-700 flex flex-col overflow-hidden min-h-0">
             {/* Table - No Scroll */}
             <div className="flex-1 overflow-hidden">
               <TableComponent 
@@ -93,16 +93,16 @@ export default function DocumentPage() {
             
             {/* Pagination - Fixed at bottom */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-2 bg-slate-50 border-t border-slate-200 flex-shrink-0">
-                <div className="text-sm text-slate-600 font-medium">
-                  Showing <span className="text-purple-600 font-semibold">{rows.length > 0 ? ((currentPage - 1) * limit + 1) : 0}</span> to <span className="text-purple-600 font-semibold">{Math.min(currentPage * limit, total)}</span> of <span className="text-purple-600 font-semibold">{total}</span>
+              <div className="flex items-center justify-between px-6 py-2 bg-slate-900 border-t border-slate-700 flex-shrink-0">
+                <div className="text-sm text-slate-300 font-medium">
+                  Showing <span className="text-purple-400 font-semibold">{rows.length > 0 ? ((currentPage - 1) * limit + 1) : 0}</span> to <span className="text-purple-400 font-semibold">{Math.min(currentPage * limit, total)}</span> of <span className="text-purple-400 font-semibold">{total}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                    className="px-4 py-2 rounded-lg bg-slate-700 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium text-slate-200"
                   >
                     ← Prev
                   </button>
@@ -125,8 +125,8 @@ export default function DocumentPage() {
                           onClick={() => setCurrentPage(page)}
                           className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                             currentPage === page
-                              ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                              : 'bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50'
+                              ? 'bg-gradient-to-r from-purple-600 to-pink-700 text-white shadow-lg'
+                              : 'bg-slate-700 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-600 text-slate-200'
                           }`}
                         >
                           {page}
@@ -138,7 +138,7 @@ export default function DocumentPage() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                    className="px-4 py-2 rounded-lg bg-slate-700 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium text-slate-200"
                   >
                     Next →
                   </button>
@@ -152,55 +152,55 @@ export default function DocumentPage() {
             {selectedDocument ? (
               <>
                 {/* Document Details */}
-                <div className="bg-gradient-to-br from-white to-purple-50 p-4 rounded-xl shadow-lg border-2 border-purple-200">
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-100">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-md">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-4 rounded-xl shadow-lg border-2 border-indigo-700">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-700 rounded-lg flex items-center justify-center shadow-md">
                       <span className="text-xl">📄</span>
                     </div>
-                    <h2 className="text-sm font-bold text-slate-800 truncate flex-1">{selectedDocument.fileName}</h2>
+                    <h2 className="text-sm font-bold text-slate-100 truncate flex-1">{selectedDocument.fileName}</h2>
                   </div>
                   <dl className="space-y-2.5 text-xs">
-                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
-                      <dt className="text-slate-600 font-medium">File Type:</dt>
-                      <dd className="text-slate-900 text-[10px] font-semibold bg-purple-100 px-2.5 py-1 rounded-full">{selectedDocument.fileType}</dd>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <dt className="text-slate-400 font-medium">File Type:</dt>
+                      <dd className="text-slate-100 text-[10px] font-semibold bg-indigo-900 px-2.5 py-1 rounded-full">{selectedDocument.fileType}</dd>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
-                      <dt className="text-slate-600 font-medium">Size:</dt>
-                      <dd className="text-slate-900 font-semibold">{(selectedDocument.size / 1024 / 1024).toFixed(2)} MB</dd>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <dt className="text-slate-400 font-medium">Size:</dt>
+                      <dd className="text-slate-100 font-semibold">{(selectedDocument.size / 1024 / 1024).toFixed(2)} MB</dd>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
-                      <dt className="text-slate-600 font-medium">Uploaded By:</dt>
-                      <dd className="text-slate-900 font-semibold">{selectedDocument.user?.name || 'Unknown'}</dd>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <dt className="text-slate-400 font-medium">Uploaded By:</dt>
+                      <dd className="text-slate-100 font-semibold">{selectedDocument.user?.name || 'Unknown'}</dd>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <dt className="text-slate-600 font-medium">Upload Date:</dt>
-                      <dd className="text-slate-900 font-semibold">{new Date(selectedDocument.createdAt).toLocaleDateString()}</dd>
+                      <dt className="text-slate-400 font-medium">Upload Date:</dt>
+                      <dd className="text-slate-100 font-semibold">{new Date(selectedDocument.createdAt).toLocaleDateString()}</dd>
                     </div>
                   </dl>
                 </div>
 
                 {/* Tags Container */}
-                <div className="bg-gradient-to-br from-white to-green-50 p-4 rounded-xl shadow-lg border-2 border-green-200">
-                  <h2 className="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-4 rounded-xl shadow-lg border-2 border-indigo-700">
+                  <h2 className="text-xs font-bold text-slate-100 mb-2.5 flex items-center gap-1">
                     <span>🏷️</span>
                     <span>Tags</span>
                   </h2>
                   <div className="flex flex-wrap gap-2">
                     {selectedDocument.tags && selectedDocument.tags.length > 0 ? (
                       selectedDocument.tags.map((tag: any) => (
-                        <span key={tag.id} className="px-2.5 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-lg font-semibold border border-green-300 text-xs shadow-sm">
+                        <span key={tag.id} className="px-2.5 py-1.5 bg-gradient-to-r from-indigo-900 to-purple-900 text-indigo-300 rounded-lg font-semibold border border-indigo-700 text-xs shadow-sm">
                           {tag.tag}
                         </span>
                       ))
                     ) : (
-                      <span className="px-2.5 py-1.5 bg-gray-100 text-gray-600 rounded-lg font-medium text-xs">No tags</span>
+                      <span className="px-2.5 py-1.5 bg-slate-700 text-slate-400 rounded-lg font-medium text-xs">No tags</span>
                     )}
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
-                  <h2 className="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1">
+                <div className="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
+                  <h2 className="text-xs font-bold text-slate-100 mb-2.5 flex items-center gap-1">
                     <span>⚡</span>
                     <span>Actions</span>
                   </h2>
@@ -232,7 +232,7 @@ export default function DocumentPage() {
                       onClick={() => {
                         window.open(`http://localhost:5001/documents/download/${selectedDocument.id}`, '_blank');
                       }}
-                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
+                      className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
                       <span>📥</span>
                       <span>Download</span>
                     </button>
@@ -243,7 +243,7 @@ export default function DocumentPage() {
                           console.log('Delete document:', selectedDocument.id);
                         }
                       }}
-                      className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
                       <span>🗑️</span>
                       <span>Delete</span>
                     </button>
@@ -251,9 +251,9 @@ export default function DocumentPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200 flex items-center justify-center h-full">
+              <div className="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700 flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-14 h-14 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-3xl">👆</span>
                   </div>
                   <p className="text-slate-400 text-sm font-medium">Select a document to view details</p>

@@ -179,12 +179,12 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50 h-full overflow-hidden flex flex-col">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 h-full overflow-hidden flex flex-col">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 overflow-hidden">
         {/* Left Panel: Conversations List */}
-        <div className="lg:col-span-1 bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
+        <div className="lg:col-span-1 bg-slate-800 rounded-xl shadow-lg border border-slate-700 flex flex-col overflow-hidden">
           {/* Header with New Chat Button */}
-          <div className="px-4 py-3 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-cyan-500 to-blue-600">
+          <div className="px-4 py-3 border-b border-slate-700 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-700">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <span>💬</span>
               <span>Conversations</span>
@@ -199,14 +199,14 @@ export default function ChatPage() {
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex-1 overflow-y-auto p-3 bg-slate-900">
             {filteredConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mb-3">
                   <span className="text-3xl">💬</span>
                 </div>
-                <p className="text-slate-500 text-sm">No conversations yet</p>
-                <p className="text-slate-400 text-xs mt-1">Start a new chat!</p>
+                <p className="text-slate-400 text-sm">No conversations yet</p>
+                <p className="text-slate-500 text-xs mt-1">Start a new chat!</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -216,15 +216,15 @@ export default function ChatPage() {
                     onClick={() => setSelectedConversation(conv.id)}
                     className={`p-3 rounded-lg cursor-pointer transition-all ${
                       selectedConversation === conv.id
-                        ? 'bg-gradient-to-r from-cyan-100 to-blue-100 border-2 border-cyan-400 shadow-md'
-                        : 'bg-slate-50 hover:bg-slate-100 border-2 border-transparent'
+                        ? 'bg-gradient-to-r from-indigo-900 to-purple-900 border-2 border-indigo-500 shadow-md'
+                        : 'bg-slate-800 hover:bg-slate-700 border-2 border-transparent'
                     }`}
                   >
-                    <h3 className="font-semibold text-slate-800 text-sm truncate mb-1">
+                    <h3 className="font-semibold text-slate-100 text-sm truncate mb-1">
                       {conv.title}
                     </h3>
-                    <p className="text-xs text-slate-500 truncate">{conv.lastMessage}</p>
-                    <p className="text-xs text-slate-400 mt-1">{conv.timestamp}</p>
+                    <p className="text-xs text-slate-400 truncate">{conv.lastMessage}</p>
+                    <p className="text-xs text-slate-500 mt-1">{conv.timestamp}</p>
                   </div>
                 ))}
               </div>
@@ -233,11 +233,11 @@ export default function ChatPage() {
         </div>
 
         {/* Right Panel: Chat Interface */}
-        <div className="lg:col-span-3 bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
+        <div className="lg:col-span-3 bg-slate-800 rounded-xl shadow-lg border border-slate-700 flex flex-col overflow-hidden">
           {selectedConversation || messages.length > 0 ? (
             <>
               {/* Chat Header */}
-              <div className="px-5 py-3 border-b border-slate-200 bg-gradient-to-r from-cyan-500 to-blue-600">
+              <div className="px-5 py-3 border-b border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-700">
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <span>🤖</span>
                   <span>AI Assistant</span>
@@ -245,7 +245,7 @@ export default function ChatPage() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-900">
                 {messages.map((msg) => {
                   const isError = msg.role === 'assistant' && msg.content.startsWith('⚠️');
                   return (
@@ -256,16 +256,16 @@ export default function ChatPage() {
                       <div
                         className={`max-w-[75%] px-4 py-3 rounded-2xl ${
                           msg.role === 'user'
-                            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white'
                             : isError
-                            ? 'bg-red-50 border-2 border-red-200 text-red-900 shadow-sm'
-                            : 'bg-white border-2 border-slate-200 text-slate-800 shadow-sm'
+                            ? 'bg-red-900/50 border-2 border-red-700 text-red-200 shadow-sm'
+                            : 'bg-slate-800 border-2 border-slate-700 text-slate-200 shadow-sm'
                         }`}
                       >
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                         <p
                           className={`text-xs mt-2 ${
-                            msg.role === 'user' ? 'text-white/70' : isError ? 'text-red-400' : 'text-slate-400'
+                            msg.role === 'user' ? 'text-white/70' : isError ? 'text-red-400' : 'text-slate-500'
                           }`}
                         >
                           {new Date(msg.timestamp).toLocaleTimeString()}
@@ -277,11 +277,11 @@ export default function ChatPage() {
 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="max-w-[75%] px-4 py-3 rounded-2xl bg-white border-2 border-slate-200">
+                    <div className="max-w-[75%] px-4 py-3 rounded-2xl bg-slate-800 border-2 border-slate-700">
                       <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -290,7 +290,7 @@ export default function ChatPage() {
               </div>
 
               {/* Input Area */}
-              <div className="p-4 border-t border-slate-200 bg-white">
+              <div className="p-4 border-t border-slate-700 bg-slate-800">
                 <div className="flex gap-3">
                   <input
                     type="text"
@@ -298,38 +298,38 @@ export default function ChatPage() {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     placeholder="Ask me anything about your documents..."
-                    className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all text-sm"
+                    className="flex-1 px-4 py-3 border-2 border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm bg-slate-700 text-slate-100 placeholder-slate-400"
                     disabled={isLoading}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     <span>Send</span>
                     <span>📤</span>
                   </button>
                 </div>
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-xs text-slate-500 mt-2">
                   💡 Tip: Press Enter to send, Shift+Enter for new line
                 </p>
               </div>
             </>
           ) : (
             // Empty State
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-full flex items-center justify-center mb-6">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-900">
+              <div className="w-24 h-24 bg-gradient-to-br from-indigo-900 to-purple-900 rounded-full flex items-center justify-center mb-6">
                 <span className="text-5xl">🤖</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">
+              <h3 className="text-2xl font-bold text-slate-100 mb-2">
                 AI Chat Assistant
               </h3>
-              <p className="text-slate-600 mb-6 max-w-md">
+              <p className="text-slate-400 mb-6 max-w-md">
                 Start a new conversation or select an existing one to chat with our AI assistant about your documents.
               </p>
               <button
                 onClick={handleNewChat}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:shadow-xl transition-all font-semibold flex items-center gap-3"
+                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl hover:shadow-xl transition-all font-semibold flex items-center gap-3"
               >
                 <span>💬</span>
                 <span>Start New Chat</span>
