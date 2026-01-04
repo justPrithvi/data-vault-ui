@@ -26,13 +26,13 @@ const PageHeader: React.FC<PageHeaderProps> = memo(({
   actionButton,
 }) => {
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-h-[88px]">
-      <div className="flex items-center gap-3 min-w-0 flex-1 lg:flex-initial">
+    <div className="flex flex-row items-center justify-between gap-3 bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[88px] flex-shrink-0">
+      <div className="flex items-center gap-3 min-w-0 flex-shrink">
         <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
           <span className="text-2xl">{icon}</span>
         </div>
-        <div className="min-w-0 flex-1 lg:flex-initial">
-          <h1 className="text-xl font-bold text-slate-800 truncate">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-slate-800 truncate whitespace-nowrap">
             {title}
             {titleHighlight && (
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -40,14 +40,14 @@ const PageHeader: React.FC<PageHeaderProps> = memo(({
               </span>
             )}
           </h1>
-          <p className="text-xs text-slate-500 truncate">
+          <p className="text-xs text-slate-500 truncate whitespace-nowrap">
             {subtitle}
           </p>
         </div>
       </div>
       
       {/* Search Bar */}
-      <div className="relative lg:w-96 flex-shrink-0">
+      <div className="relative w-96 flex-shrink-0">
         <input
           type="text"
           placeholder={searchPlaceholder}
@@ -69,7 +69,7 @@ const PageHeader: React.FC<PageHeaderProps> = memo(({
       </div>
 
       {/* Optional Action Button - Fixed Width Container */}
-      <div className="lg:w-[220px] flex-shrink-0">
+      <div className="w-[220px] flex-shrink-0">
         {actionButton && (
           <button
             className="w-full group bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3 rounded-xl hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 font-semibold hover:scale-105 whitespace-nowrap"

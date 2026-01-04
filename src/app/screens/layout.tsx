@@ -21,7 +21,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
       {headerConfig && (
-        <div className="px-5 pt-5 pb-4 flex-shrink-0">
+        <div className="px-5 pt-5 pb-4 flex-shrink-0 h-[124px]">
           <PageHeader 
             {...headerConfig} 
             searchQuery={searchQuery}
