@@ -24,8 +24,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const logutFn = getLogoutFn()
-      if (logutFn) logutFn()
+      const logoutFn = getLogoutFn()
+      if (logoutFn) logoutFn()
     }
     return Promise.reject(error);
   }

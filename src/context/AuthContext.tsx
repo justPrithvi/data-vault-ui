@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.post('/auth/signin', { email, password });
       const data = response.data;
 
-      setUser({ email }, data.accessToken); // persist user + token
+      setUser(data.user, data.accessToken); // persist user + token
       router.push('/screens/dashboard');
     } catch (err: any) {
       throw new Error(err.response?.data?.message || 'Login failed');

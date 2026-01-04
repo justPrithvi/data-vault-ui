@@ -1,93 +1,361 @@
 "use client";
 
-export default function DashboardPage() {
-  const stats = [
-    { id: 1, title: "Total Documents", value: 120, icon: "📄" },
-    { id: 2, title: "Active Users", value: 45, icon: "👥" },
-    { id: 3, title: "Tags", value: 18, icon: "🏷️" },
-    { id: 4, title: "Pending Reviews", value: 7, icon: "⚡" },
-  ];
+import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
+import api from "@/app/lib/axios";
+import { useRouter } from "next/navigation";
+import { usePageHeader } from "@/context/PageHeaderContext";
 
-  const recentDocuments = [
-    { id: 1, name: "Document 1", uploadedBy: "John", date: "2025-08-22" },
-    { id: 2, name: "Document 2", uploadedBy: "Alice", date: "2025-08-20" },
-    { id: 3, name: "Document 3", uploadedBy: "Bob", date: "2025-08-18" },
-    { id: 4, name: "Document 4", uploadedBy: "Jane", date: "2025-08-15" },
-    { id: 5, name: "Document 5", uploadedBy: "Mike", date: "2025-08-12" },
-    { id: 6, name: "Document 6", uploadedBy: "Sara", date: "2025-08-10" },
-    { id: 1, name: "Document 1", uploadedBy: "John", date: "2025-08-22" },
-    { id: 2, name: "Document 2", uploadedBy: "Alice", date: "2025-08-20" },
-    { id: 3, name: "Document 3", uploadedBy: "Bob", date: "2025-08-18" },
-    { id: 4, name: "Document 4", uploadedBy: "Jane", date: "2025-08-15" },
-    { id: 5, name: "Document 5", uploadedBy: "Mike", date: "2025-08-12" },
-    { id: 6, name: "Document 6", uploadedBy: "Sara", date: "2025-08-10" },
-  ];
+interface Tag {
+  id: number;
+  tag: string;
+}
+
+interface Document {
+  id: number;
+  fileName: string;
+  fileType: string;
+  size: number;
+  user: { name: string };
+  tags: Tag[];
+  createdAt: string;
+}
+
+export default function DashboardPage() {
+  const { user, authContextLoading } = useAuth();
+  const router = useRouter();
+  const { setHeaderConfig, searchQuery } = usePageHeader();
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState<number | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatHistory, setChatHistory] = useState<{role: string; message: string}[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const docsPerPage = 5;
+
+  // Set header config for dashboard - only once on mount
+  useEffect(() => {
+    setHeaderConfig({
+      icon: "📊",
+      title: "Welcome, ",
+      titleHighlight: user?.name || 'User',
+      subtitle: "Browse and chat with your documents",
+      searchPlaceholder: "Search documents...",
+      onSearchChange: () => {
+        setCurrentPage(1);
+      },
+    });
+  }, [user?.name, setHeaderConfig]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!authContextLoading && user) {
+        try {
+          // Admin users see all documents, regular users see only their own
+          const userParam = user.isAdmin ? 'all' : user.email;
+          const [docsRes, tagsRes] = await Promise.all([
+            api.get(`/documents/${userParam}`, { params: { limit: 1000 } }),
+            api.get('/internal/tags'),
+          ]);
+          
+          setDocuments(docsRes.data.data || []);
+          setTags(tagsRes.data || []);
+        } catch (err) {
+          console.error('Error fetching dashboard data:', err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchData();
+  }, [authContextLoading, user]);
+
+  // Filter documents by selected tag and search query
+  const filteredDocuments = documents.filter(doc => {
+    const matchesTag = selectedTag ? doc.tags?.some(tag => tag.id === selectedTag) : true;
+    const matchesSearch = searchQuery 
+      ? doc.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesTag && matchesSearch;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredDocuments.length / docsPerPage);
+  const paginatedDocs = filteredDocuments.slice(
+    (currentPage - 1) * docsPerPage,
+    currentPage * docsPerPage
+  );
+
+  // Calculate document counts by tag
+  const tagCounts = tags.map(tag => ({
+    ...tag,
+    count: documents.filter(doc => doc.tags?.some(t => t.id === tag.id)).length
+  }));
+
+  const handleDocumentClick = (doc: Document) => {
+    setSelectedDocument(doc);
+    setChatOpen(true);
+    setChatHistory([
+      { role: "system", message: `Chat started for document: ${doc.fileName}` }
+    ]);
+  };
+
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    
+    setChatHistory([...chatHistory, 
+      { role: "user", message: chatMessage },
+      { role: "assistant", message: "This is a mock response. Python service will be integrated later." }
+    ]);
+    setChatMessage("");
+  };
 
   return (
-   <main className="flex-1 bg-gray-100 h-screen">
-    <div className="p-6 h-full flex flex-col gap-6">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 h-full overflow-hidden flex flex-col gap-4">
 
-    {/* Header */}
-    <div className="flex justify-between items-center">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-      </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.id}
-              className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl shadow hover:bg-gray-100 transition"
-            >
-              <span className="text-3xl">{stat.icon}</span>
-              <div className="flex flex-col">
-                <span className="text-gray-800 font-medium">{stat.title}</span>
-                <span className="text-gray-500 font-semibold">{stat.value}</span>
+        {/* Tag Filter Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 flex-shrink-0">
+          <div
+            onClick={() => { setSelectedTag(null); setCurrentPage(1); }}
+            className={`cursor-pointer p-3 rounded-lg transition-all duration-300 border-2 ${
+              selectedTag === null
+                ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-indigo-600 shadow-lg scale-[1.02]'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className="text-lg">📊</div>
+              <div className={`text-xl font-bold ${selectedTag === null ? 'text-white' : 'text-indigo-600'}`}>
+                {documents.length}
               </div>
+            </div>
+            <div className="text-xs font-semibold opacity-90 mt-0.5">All Documents</div>
+          </div>
+          
+          {tagCounts.map(tag => (
+            <div
+              key={tag.id}
+              onClick={() => { setSelectedTag(tag.id); setCurrentPage(1); }}
+              className={`cursor-pointer p-3 rounded-lg transition-all duration-300 border-2 ${
+                selectedTag === tag.id
+                  ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-emerald-600 shadow-lg scale-[1.02]'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-400 hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className="text-lg">🏷️</div>
+                <div className={`text-xl font-bold ${selectedTag === tag.id ? 'text-white' : 'text-emerald-600'}`}>
+                  {tag.count}
+                </div>
+              </div>
+              <div className="text-xs font-semibold opacity-90 truncate mt-0.5">{tag.tag}</div>
             </div>
           ))}
         </div>
 
-        {/* Recent Documents */}
-        <div className="bg-gray-50 rounded-xl p-2 shadow flex flex-col gap-4 flex-1 overflow-hidden">
-          <h2 className="text-xl font-bold text-gray-800">Recent Documents</h2>
-          <div className="overflow-y-auto flex-1">
-            <table className="w-full text-sm table-auto border-collapse text-center">
-              <thead className="bg-white sticky top-0 z-10">
-                <tr>
-                  <th className="px-6 py-3 text-gray-600 uppercase tracking-wider border-b">Name</th>
-                  <th className="px-6 py-3 text-gray-600 uppercase tracking-wider border-b">Uploaded By</th>
-                  <th className="px-6 py-3 text-gray-600 uppercase tracking-wider border-b">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-900">{doc.name}</td>
-                    <td className="px-6 py-4 text-gray-700">{doc.uploadedBy}</td>
-                    <td className="px-6 py-4 text-gray-500">{doc.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-4 justify-center flex-shrink-0">
-          <button className="flex items-center justify-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600 transition font-medium">
-            📄 Upload Document
-          </button>
-          <button className="flex items-center justify-center gap-2 bg-green-500 text-white px-6 py-3 rounded-lg shadow hover:bg-green-600 transition font-medium">
-            🏷️ Manage Tags
-          </button>
-          <button className="flex items-center justify-center gap-2 bg-yellow-500 text-white px-6 py-3 rounded-lg shadow hover:bg-yellow-600 transition font-medium">
-            ⚡ Review Documents
-          </button>
+        {/* Documents Grid & Chat */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 overflow-hidden">
+          {/* Documents Section */}
+          <div className="lg:col-span-1 bg-white rounded-xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+              <h2 className="text-base font-bold text-slate-800">
+                {selectedTag ? `${tagCounts.find(t => t.id === selectedTag)?.tag} Documents` : 'All Documents'}
+              </h2>
+              <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">
+                {filteredDocuments.length} total
+              </span>
       </div>
 
-    </div>
-  </main>
+            <div className="flex-1 p-4 overflow-hidden">
+          {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce"></div>
+                    <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                </div>
+              ) : paginatedDocs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center">
+                    <span className="text-4xl">📭</span>
+                  </div>
+                  <p className="text-slate-500 font-medium">No documents found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-1.5">
+                  {paginatedDocs.map(doc => (
+                    <div
+                      key={doc.id}
+                      onClick={() => handleDocumentClick(doc)}
+                      className="group cursor-pointer p-1.5 bg-gradient-to-br from-white to-slate-50 rounded-lg border-2 border-slate-200 hover:border-indigo-400 hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-md flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm">📄</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors text-sm leading-tight">
+                            {doc.fileName}
+                          </h3>
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {doc.tags && doc.tags.length > 0 ? (
+                              doc.tags.map((tag) => (
+                                <span key={tag.id} className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded font-medium leading-tight">
+                                  {tag.tag}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-slate-400">No tags</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 leading-tight">
+                            <span>{(doc.size / 1024 / 1024).toFixed(2)} MB</span>
+                            <span>•</span>
+                            <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-col gap-1.5 px-4 py-2 bg-slate-50 border-t border-slate-200 flex-shrink-0">
+                <div className="text-xs text-slate-600 text-center">
+                  <span className="text-indigo-600 font-semibold">{paginatedDocs.length > 0 ? ((currentPage - 1) * docsPerPage + 1) : 0}</span>-<span className="text-indigo-600 font-semibold">{Math.min(currentPage * docsPerPage, filteredDocuments.length)}</span> of <span className="text-indigo-600 font-semibold">{filteredDocuments.length}</span>
+                </div>
+                
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-2 py-0.5 rounded bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
+                  >
+                    ←
+                  </button>
+                  
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let page;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-2.5 py-0.5 rounded transition-all text-xs font-medium ${
+                            currentPage === page
+                              ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm'
+                              : 'bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-2 py-0.5 rounded bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+          )}
+        </div>
+
+          {/* Chat Section */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-200 bg-gradient-to-r from-indigo-500 to-purple-600">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <span>💬</span>
+                <span>Document Chat</span>
+              </h2>
+            </div>
+
+            {chatOpen && selectedDocument ? (
+              <>
+                <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
+                  <p className="text-xs text-slate-600 font-medium truncate">
+                    📄 {selectedDocument.fileName}
+                  </p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {chatHistory.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] px-4 py-2 rounded-lg text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                            : msg.role === 'system'
+                            ? 'bg-slate-100 text-slate-600 text-xs italic'
+                            : 'bg-slate-200 text-slate-800'
+                        }`}
+                      >
+                        {msg.message}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 border-t border-slate-200">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      placeholder="Ask about this document..."
+                      className="flex-1 px-4 py-2 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm"
+                    >
+                      Send
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">
+                    ⚠️ Python service integration pending
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-4xl">💬</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                  Start a Conversation
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Click on a document to start chatting about it
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+    </div>
   );
 }

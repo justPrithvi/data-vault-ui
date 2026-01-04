@@ -3,115 +3,415 @@
 
 import TableComponent from "@/components/TableComponent";
 import { useAuth } from "@/context/AuthContext";
+import UploadModal from "@/components/UploadModal";
+import { usePageHeader } from "@/context/PageHeaderContext";
+import { useCallback, useEffect, useState } from "react";
+import api from "@/app/lib/axios";
 
 export default function DocumentPage() {
-  const { user } = useAuth();
-  const rows:any = [];
-  
-  return(
-  <main className="flex-1 bg-gray-100 h-screen overflow-hidden">
-    <div className="mt-10 mb-20 p-4 gap-4 h-screen overflow-auto bg-white rounded-xl shadow flex flex-col">
+  const { user, authContextLoading } = useAuth();
+  const { setHeaderConfig, searchQuery } = usePageHeader();
 
-      {/* Row 1: 20% height */}
-      <div className="flex justify-between items-start h-1/8">
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [rows, setRows] = useState<any[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit] = useState(10);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewLoading, setPreviewLoading] = useState(false);
 
-        {/* Left side: Title + Search */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold">Document Management</h1>
+  // Set header config for document page
+  useEffect(() => {
+    setHeaderConfig({
+      icon: "📄",
+      title: "Document Management",
+      subtitle: "Manage and organize your files",
+      searchPlaceholder: "Search documents...",
+      onSearchChange: () => {
+        setCurrentPage(1);
+      },
+      actionButton: {
+        label: "Upload Document",
+        icon: "📄",
+        onClick: () => setShowModal(true),
+      },
+    });
+  }, [setHeaderConfig]);
+
+  // Fetch on mount, when page changes, or search query changes
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        if(!authContextLoading && user) {
+          // Admin users see all documents, regular users see only their own
+          const userParam = user.isAdmin ? 'all' : user.email;
+          const res = await api.get(`/documents/${userParam}`, {
+            params: { page: currentPage, limit, search: searchQuery }
+          });
           
-          {/* Search box with icon */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search documents..."
-              className="pl-10 pr-4 py-2 border rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {/* Search icon */}
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
+          setRows(res.data.data || [])
+          setTotal(res.data.meta?.total || 0)
+          setTotalPages(res.data.meta?.totalPages || 1)
+          setCurrentPage(res.data.meta?.page || 1)
+        }
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+      }
+    };
+
+    const delayDebounce = setTimeout(() => {
+      fetchDocuments();
+    }, 300); // Debounce search by 300ms
+
+    return () => clearTimeout(delayDebounce);
+  }, [authContextLoading, user, currentPage, limit, searchQuery]);
+  
+  return (
+    <>
+    <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 h-full overflow-hidden flex flex-col">
+      <div className="flex flex-col gap-4 h-full overflow-hidden">
+        {/* Main Content Card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-200 flex flex-col flex-1 overflow-hidden max-w-full">
+
+        {/* Main content - Flexible */}
+        <div className="flex flex-1 gap-5 px-5 py-4.5 overflow-hidden min-h-0">
+          {/* Left Column: Documents Table */}
+          <div className="flex-[0.7] bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col overflow-hidden min-h-0">
+            {/* Table - No Scroll */}
+            <div className="flex-1 overflow-hidden">
+              <TableComponent 
+                rows={rows} 
+                onRowClick={setSelectedDocument}
+                selectedDocument={selectedDocument}
+                isAdmin={user?.isAdmin}
+              ></TableComponent>
+            </div>
+            
+            {/* Pagination - Fixed at bottom */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-2 bg-slate-50 border-t border-slate-200 flex-shrink-0">
+                <div className="text-sm text-slate-600 font-medium">
+                  Showing <span className="text-purple-600 font-semibold">{rows.length > 0 ? ((currentPage - 1) * limit + 1) : 0}</span> to <span className="text-purple-600 font-semibold">{Math.min(currentPage * limit, total)}</span> of <span className="text-purple-600 font-semibold">{total}</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                  >
+                    ← Prev
+                  </button>
+                  
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let page;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                            currentPage === page
+                              ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                              : 'bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Document Details */}
+          <div className="flex-[0.3] flex flex-col gap-4 overflow-hidden">
+            {selectedDocument ? (
+              <>
+                {/* Document Details */}
+                <div className="bg-gradient-to-br from-white to-purple-50 p-4 rounded-xl shadow-lg border-2 border-purple-200">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-100">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-md">
+                      <span className="text-xl">📄</span>
+                    </div>
+                    <h2 className="text-sm font-bold text-slate-800 truncate flex-1">{selectedDocument.fileName}</h2>
+                  </div>
+                  <dl className="space-y-2.5 text-xs">
+                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
+                      <dt className="text-slate-600 font-medium">File Type:</dt>
+                      <dd className="text-slate-900 text-[10px] font-semibold bg-purple-100 px-2.5 py-1 rounded-full">{selectedDocument.fileType}</dd>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
+                      <dt className="text-slate-600 font-medium">Size:</dt>
+                      <dd className="text-slate-900 font-semibold">{(selectedDocument.size / 1024 / 1024).toFixed(2)} MB</dd>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-purple-100">
+                      <dt className="text-slate-600 font-medium">Uploaded By:</dt>
+                      <dd className="text-slate-900 font-semibold">{selectedDocument.user?.name || 'Unknown'}</dd>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <dt className="text-slate-600 font-medium">Upload Date:</dt>
+                      <dd className="text-slate-900 font-semibold">{new Date(selectedDocument.createdAt).toLocaleDateString()}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Tags Container */}
+                <div className="bg-gradient-to-br from-white to-green-50 p-4 rounded-xl shadow-lg border-2 border-green-200">
+                  <h2 className="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1">
+                    <span>🏷️</span>
+                    <span>Tags</span>
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDocument.tags && selectedDocument.tags.length > 0 ? (
+                      selectedDocument.tags.map((tag: any) => (
+                        <span key={tag.id} className="px-2.5 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-lg font-semibold border border-green-300 text-xs shadow-sm">
+                          {tag.tag}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="px-2.5 py-1.5 bg-gray-100 text-gray-600 rounded-lg font-medium text-xs">No tags</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
+                  <h2 className="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1">
+                    <span>⚡</span>
+                    <span>Actions</span>
+                  </h2>
+                  <div className="flex flex-col gap-2.5">
+                    <button 
+                      onClick={async () => {
+                        setShowPreview(true);
+                        setPreviewLoading(true);
+                        try {
+                          const response = await api.get(`/documents/download/${selectedDocument.id}`, {
+                            responseType: 'blob'
+                          });
+                          const blob = new Blob([response.data], { type: selectedDocument.fileType });
+                          const url = URL.createObjectURL(blob);
+                          setPreviewUrl(url);
+                        } catch (error) {
+                          console.error('Error loading preview:', error);
+                          alert('Failed to load preview');
+                          setShowPreview(false);
+                        } finally {
+                          setPreviewLoading(false);
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
+                      <span>👁️</span>
+                      <span>Preview</span>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        window.open(`http://localhost:5001/documents/download/${selectedDocument.id}`, '_blank');
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
+                      <span>📥</span>
+                      <span>Download</span>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this document?')) {
+                          // TODO: Implement delete
+                          console.log('Delete document:', selectedDocument.id);
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition-all text-xs hover:scale-105 flex items-center justify-center gap-2">
+                      <span>🗑️</span>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200 flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-3xl">👆</span>
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium">Select a document to view details</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Right side: Wide button */}
-        <button className="bg-blue-500 text-white px-6 py-3 mt-4 mr-1 rounded-lg hover:bg-blue-600 flex items-center gap-2">
-          Upload Document
-        </button>
-
+        </div>
       </div>
-
-      {/* Row 1: 20% height */}
-      <div className="flex flex-1 gap-2">
-        {/* Left Column: 70% width */}
-        <div className="flex-[0.7] bg-gray-50 rounded-2xl p-3 overflow-auto">
-          <TableComponent rows={rows}></TableComponent>
-        </div>
-
-        {/* Right Column: 30% width */}
-        <div className="flex-[0.3] flex flex-col gap-9  ">
-          {/* Document Details */}
-         <div className="bg-white p-2 rounded-2xl shadow-md border border-gray-100">
-            {/* Title with icon */}
-            <div className="flex items-center gap-3 mb-1">
-              <span className="text-blue-500 text-2xl">📄</span>
-              <h2 className="text-xl font-bold text-gray-800">Document 1</h2>
-            </div>
-
-            {/* Optional description */}
-            <p className="text-gray-500 text-sm mb-2">
-              This is a short description of the document, explaining its purpose.
-            </p>
-
-            {/* Details list */}
-            <dl className="divide-y divide-gray-100 text-gray-700">
-              <div className="flex justify-between py-2">
-                <dt className="font-medium">Type:</dt>
-                <dd>PDF</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="font-medium">Size:</dt>
-                <dd>2 MB</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="font-medium">Uploaded By:</dt>
-                <dd>John</dd>
-              </div>
-              <div className="flex justify-between py-2">
-                <dt className="font-medium">Date:</dt>
-                <dd>Jan 12, 2025</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">🏷️ Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 text-sm rounded-full">Finance</span>
-              <span className="bg-green-100 text-green-700 px-3 py-1 text-sm rounded-full">Q1</span>
-              <span className="bg-purple-100 text-purple-700 px-3 py-1 text-sm rounded-full">Confidential</span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">⚡ Actions</h2>
-            <div className="flex gap-4 w-full justify-evenly">
-              <button className="flex items-center justify-center gap-2 bg-red-500 text-white font-medium px-5 py-2 rounded-lg shadow hover:bg-red-600 transition w-28">
-                 Delete
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-blue-500 text-white font-medium px-5 py-2 rounded-lg shadow hover:bg-blue-600 transition w-32">
-                Download
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-
-
     </div>
-  </main>
- 
-  )
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onUploaded={() => {
+          setCurrentPage(1); // Go to first page after upload
+        }}
+      />
+
+      {/* Preview Modal */}
+      {showPreview && selectedDocument && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👁️</span>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">{selectedDocument.fileName}</h2>
+                  <p className="text-xs text-slate-500">{selectedDocument.fileType}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPreview(false);
+                  if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    setPreviewUrl('');
+                  }
+                }}
+                className="text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Preview Content */}
+            <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-4">
+              {previewLoading ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                  <p className="text-slate-600 font-medium">Loading preview...</p>
+                </div>
+              ) : previewUrl ? (
+                selectedDocument.fileType.startsWith('image/') ? (
+                  // Image Preview
+                  <img
+                    src={previewUrl}
+                    alt={selectedDocument.fileName}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                  />
+                ) : selectedDocument.fileType === 'application/pdf' ? (
+                  // PDF Preview
+                  <iframe
+                    src={previewUrl}
+                    className="w-full h-full rounded-lg border-2 border-slate-200"
+                    title={selectedDocument.fileName}
+                  />
+                ) : selectedDocument.fileType.startsWith('text/') ? (
+                  // Text Preview
+                  <iframe
+                    src={previewUrl}
+                    className="w-full h-full bg-white rounded-lg border-2 border-slate-200 p-4"
+                    title={selectedDocument.fileName}
+                  />
+                ) : selectedDocument.fileType.startsWith('video/') ? (
+                  // Video Preview
+                  <video
+                    controls
+                    className="max-w-full max-h-full rounded-lg shadow-lg"
+                    src={previewUrl}
+                  >
+                    Your browser does not support video playback.
+                  </video>
+                ) : selectedDocument.fileType.startsWith('audio/') ? (
+                  // Audio Preview
+                  <div className="text-center">
+                    <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-6xl">🎵</span>
+                    </div>
+                    <audio
+                      controls
+                      className="mx-auto"
+                      src={previewUrl}
+                    >
+                      Your browser does not support audio playback.
+                    </audio>
+                  </div>
+                ) : (
+                  // Unsupported file type
+                  <div className="text-center">
+                    <div className="w-32 h-32 bg-gradient-to-br from-slate-200 to-slate-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-6xl">📄</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Preview Not Available</h3>
+                    <p className="text-slate-600 mb-4">
+                      This file type cannot be previewed in the browser.
+                    </p>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = previewUrl;
+                        link.download = selectedDocument.fileName;
+                        link.click();
+                      }}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                    >
+                      Download to View
+                    </button>
+                  </div>
+                )
+              ) : null}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowPreview(false);
+                  if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    setPreviewUrl('');
+                  }
+                }}
+                className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-all"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  if (previewUrl) {
+                    const link = document.createElement('a');
+                    link.href = previewUrl;
+                    link.download = selectedDocument.fileName;
+                    link.click();
+                  }
+                }}
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <span>📥</span>
+                <span>Download</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
