@@ -237,7 +237,7 @@ export default function ChatPage() {
           {selectedConversation || messages.length > 0 ? (
             <>
               {/* Chat Header */}
-              <div className="px-5 py-3 border-b border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-700">
+              <div className="px-5 py-3 border-b border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-700 flex-shrink-0">
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <span>🤖</span>
                   <span>AI Assistant</span>
@@ -245,7 +245,7 @@ export default function ChatPage() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-900">
+              <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4 bg-slate-900">
                 {messages.map((msg) => {
                   const isError = msg.role === 'assistant' && msg.content.startsWith('⚠️');
                   return (
@@ -290,29 +290,27 @@ export default function ChatPage() {
               </div>
 
               {/* Input Area */}
-              <div className="p-4 border-t border-slate-700 bg-slate-800">
-                <div className="flex gap-3">
+              <div className="p-3 border-t border-slate-700 bg-slate-800 flex-shrink-0">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     placeholder="Ask me anything about your documents..."
-                    className="flex-1 px-4 py-3 border-2 border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm bg-slate-700 text-slate-100 placeholder-slate-400"
+                    className="flex-1 px-3 py-2 border-2 border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm bg-slate-700 text-slate-100 placeholder-slate-400"
                     disabled={isLoading}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-lg hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
                   >
                     <span>Send</span>
                     <span>📤</span>
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  💡 Tip: Press Enter to send, Shift+Enter for new line
-                </p>
+               
               </div>
             </>
           ) : (

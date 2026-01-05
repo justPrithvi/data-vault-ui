@@ -157,7 +157,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Documents Grid & Chat */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-5 overflow-hidden">
           {/* Documents Section */}
           <div className="lg:col-span-1 bg-slate-800 rounded-xl shadow-xl border border-slate-700 flex flex-col overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-700 flex justify-between items-center">
@@ -282,8 +282,8 @@ export default function DashboardPage() {
         </div>
 
           {/* Chat Section */}
-          <div className="lg:col-span-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 flex flex-col overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-700">
+          <div className="lg:col-span-3 bg-slate-800 rounded-xl shadow-xl border border-slate-700 flex flex-col overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-700 flex-shrink-0">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <span>💬</span>
                 <span>Document Chat</span>
@@ -292,13 +292,13 @@ export default function DashboardPage() {
 
             {chatOpen && selectedDocument ? (
               <>
-                <div className="px-4 py-2.5 border-b border-slate-700 bg-slate-900">
+                <div className="px-4 py-2.5 border-b border-slate-700 bg-slate-900 flex-shrink-0">
                   <p className="text-xs text-slate-300 font-medium truncate">
                     📄 {selectedDocument.fileName}
                   </p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-900">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-900">
                   {chatHistory.map((msg, idx) => (
                     <div
                       key={idx}
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
 
-                <div className="p-4 border-t border-slate-700 bg-slate-800">
+                <div className="p-3 border-t border-slate-700 bg-slate-800 flex-shrink-0">
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       onChange={(e) => setChatMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Ask about this document..."
-                      className="flex-1 px-4 py-2 border-2 border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-700 text-slate-100 placeholder-slate-400 text-sm"
+                      className="flex-1 px-3 py-2 border-2 border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-700 text-slate-100 placeholder-slate-400 text-sm"
                     />
                     <button
                       onClick={handleSendMessage}
@@ -336,9 +336,7 @@ export default function DashboardPage() {
                       Send
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">
-                    ⚠️ Python service integration pending
-                  </p>
+                  
                 </div>
               </>
             ) : (

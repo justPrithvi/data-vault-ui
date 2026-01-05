@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import api from "../app/lib/axios";
+import { uploadDocumentToNest, getTags } from "../app/lib/nestApi";
+import { uploadDocumentToPython } from "../app/lib/pythonApi";
 import { useAuth } from "@/context/AuthContext";
 
 interface Tag {
@@ -24,9 +25,8 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
 
   // Fetch tags on mount
   useEffect(() => {
-    api
-      .get("internal/tags")
-      .then((res: any) => setTags(res.data))
+    getTags()
+      .then((data: any) => setTags(data))
       .catch((err: any) => console.error("Error fetching tags:", err));
   }, []);
 
@@ -62,17 +62,28 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
       setLoading(true);
       setError(null);
 
-      // Create FormData to send file directly to server
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("tags", JSON.stringify(selectedTagIds));
+      // Upload file to NestJS server
+      const nestResponse = await uploadDocumentToNest(file, selectedTagIds);
 
-      // Upload file directly to server
-      await api.post("/documents/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      console.log("NestJS upload response:", nestResponse.data);
+
+      // Only send to Python service if NestJS upload was successful
+      if (nestResponse.status === 200 || nestResponse.status === 201) {
+        try {
+          // Extract document ID from NestJS response (response is the document object with id)
+          const documentId = nestResponse.data.id;
+          
+          if (documentId) {
+            const pythonData = await uploadDocumentToPython(file, documentId);
+            console.log("Python service response:", pythonData);
+          } else {
+            console.error("Document ID not found in NestJS response");
+          }
+        } catch (pythonErr) {
+          console.error("Python service upload failed:", pythonErr);
+          // Don't fail the overall upload if Python service fails
+        }
+      }
 
       setLoading(false);
       setFile(null);
