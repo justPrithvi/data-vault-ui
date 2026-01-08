@@ -76,13 +76,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
   };
   
   return (
-    <div className="bg-slate-800 h-full overflow-hidden">
+    <div className="bg-slate-800 h-full overflow-y-auto">
         <table className="w-full table-fixed border-collapse min-w-0">
-            <thead className="bg-gradient-to-r from-purple-700 via-pink-700 to-purple-700 shadow-lg">
+            <thead className="bg-gradient-to-r from-purple-700 via-pink-700 to-purple-700 shadow-lg sticky top-0 z-10 border-b-0 lg:border-b-[8px] border-slate-800">
             <tr>
                 <th 
                   onClick={() => handleSort('fileName')}
-                  className={`${isAdmin ? 'w-[35%]' : 'w-[45%]'} px-6 py-1.5 font-bold text-white uppercase text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
+                  className={`${isAdmin ? 'w-[35%]' : 'w-[45%]'} px-3 lg:px-5 py-2 lg:py-3 font-bold text-white uppercase text-[10px] lg:text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
                   <div className="flex items-center gap-1">
                     📄 Document Name
                     <SortIcon field="fileName" />
@@ -90,7 +90,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                 </th>
                 <th 
                   onClick={() => handleSort('fileType')}
-                  className={`${isAdmin ? 'w-[15%]' : 'w-[18%]'} px-6 py-1.5 font-bold text-white uppercase text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
+                  className={`${isAdmin ? 'w-[15%]' : 'w-[18%]'} px-3 lg:px-5 py-2 lg:py-3 font-bold text-white uppercase text-[10px] lg:text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
                   <div className="flex items-center gap-1">
                     📋 Format
                     <SortIcon field="fileType" />
@@ -98,7 +98,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                 </th>
                 <th 
                   onClick={() => handleSort('size')}
-                  className={`${isAdmin ? 'w-[15%]' : 'w-[18%]'} px-6 py-1.5 font-bold text-white uppercase text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
+                  className={`${isAdmin ? 'w-[15%]' : 'w-[18%]'} px-3 lg:px-5 py-2 lg:py-3 font-bold text-white uppercase text-[10px] lg:text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
                   <div className="flex items-center gap-1">
                     💾 Size
                     <SortIcon field="size" />
@@ -107,7 +107,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                 {isAdmin && (
                   <th 
                     onClick={() => handleSort('userName')}
-                    className="w-[15%] px-6 py-1.5 font-bold text-white uppercase text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors">
+                    className="w-[15%] px-3 lg:px-5 py-2 lg:py-3 font-bold text-white uppercase text-[10px] lg:text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors">
                     <div className="flex items-center gap-1">
                       👤 User
                       <SortIcon field="userName" />
@@ -116,7 +116,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                 )}
                 <th 
                   onClick={() => handleSort('createdAt')}
-                  className={`${isAdmin ? 'w-[20%]' : 'w-[19%]'} px-6 py-1.5 font-bold text-white uppercase text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
+                  className={`${isAdmin ? 'w-[20%]' : 'w-[19%]'} px-3 lg:px-5 py-2 lg:py-3 font-bold text-white uppercase text-[10px] lg:text-xs tracking-wider text-left cursor-pointer hover:bg-purple-700/50 transition-colors`}>
                   <div className="flex items-center gap-1">
                     📅 Date
                     <SortIcon field="createdAt" />
@@ -151,24 +151,24 @@ const TableComponent: React.FC<TableComponentProps> = ({ rows, onRowClick, selec
                         ? 'bg-gradient-to-r from-purple-900 to-pink-900 border-l-4 border-purple-500 shadow-md' 
                         : 'hover:bg-slate-700/50 hover:shadow-sm'
                     }`}>
-                    <td className="px-6 py-3.5 font-semibold text-slate-100 text-left truncate text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm ${isSelected ? 'scale-110' : ''} transition-transform`}>📄</span>
+                    <td className="px-3 lg:px-5 py-2 lg:py-3.5 font-semibold text-slate-100 text-left truncate text-xs lg:text-sm">
+                        <div className="flex items-center gap-1.5 lg:gap-2">
+                          <span className={`text-xs lg:text-sm ${isSelected ? 'scale-110' : ''} transition-transform`}>📄</span>
                           {document.fileName}
                         </div>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-300 text-left text-xs truncate">
-                      <span className="px-1.5 py-0.5 bg-slate-700 rounded font-medium text-[10px]">
+                    <td className="px-3 lg:px-5 py-2 lg:py-3.5 text-slate-300 text-left text-xs truncate">
+                      <span className="px-1 lg:px-1.5 py-0.5 bg-slate-700 rounded font-medium text-[9px] lg:text-[10px]">
                         {document.fileType.split('/')[1]?.toUpperCase() || 'FILE'}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-200 text-left font-medium text-xs">
+                    <td className="px-3 lg:px-5 py-2 lg:py-3.5 text-slate-200 text-left font-medium text-[10px] lg:text-xs">
                       {(document.size / 1024 / 1024).toFixed(2)} MB
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-3.5 text-slate-200 text-left font-medium truncate text-xs">{document.user.name}</td>
+                      <td className="px-3 lg:px-5 py-2 lg:py-3.5 text-slate-200 text-left font-medium truncate text-[10px] lg:text-xs">{document.user.name}</td>
                     )}
-                    <td className="px-6 py-3.5 text-slate-400 text-left text-[10px]">{new Date(document.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td className="px-3 lg:px-5 py-2 lg:py-3.5 text-slate-400 text-left text-[9px] lg:text-[10px]">{new Date(document.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                   </tr>
                 );
               })

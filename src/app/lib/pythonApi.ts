@@ -36,11 +36,14 @@ export const uploadDocumentToPython = async (
 
 /**
  * Get all conversations for the current user
+ * @param userId - The user ID to fetch conversations for
  * @returns Promise with the conversations list
  */
-export const getConversations = async (): Promise<any> => {
+export const getConversations = async (userId: string): Promise<any> => {
   try {
-    const response = await pythonApi.get("/api/conversations");
+    const response = await pythonApi.get("/api/conversations", {
+      params: { userId }
+    });
     return response.data;
   } catch (error) {
     console.error("Failed to fetch conversations:", error);
@@ -67,13 +70,13 @@ export const getConversationHistory = async (conversationId: string): Promise<an
  * Send chat message to Python RAG service
  * @param message - The user's message
  * @param conversationId - The conversation ID (null for new conversations, backend will generate one)
- * @param userId - The user ID
+ * @param userId - The user ID (required)
  * @returns Promise with the response data (includes conversationId from backend)
  */
 export const sendChatMessage = async (
   message: string,
   conversationId: string | null,
-  userId?: string
+  userId: string
 ): Promise<any> => {
   try {
     // TODO: Update endpoint path when final endpoint is provided

@@ -97,23 +97,23 @@ const TagsPage: React.FC = () => {
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 h-full overflow-hidden flex flex-col">
-      <div className="flex flex-col gap-3 h-full overflow-hidden">
+      <div className="flex flex-col gap-2 lg:gap-3 h-full overflow-hidden">
         {/* Add Tag Section */}
-        <div className="bg-slate-800 backdrop-blur-sm rounded-xl border border-indigo-700 p-3 shadow-xl flex-shrink-0">
-          <label className="block text-xs font-medium text-slate-200 mb-2">Add New Tag</label>
-          <div className="flex gap-2">
+        <div className="bg-slate-800 backdrop-blur-sm rounded-lg border border-indigo-700 p-2 lg:p-2.5 shadow-xl flex-shrink-0">
+          <label className="block text-[10px] lg:text-xs font-medium text-slate-200 mb-1.5 lg:mb-2">Add New Tag</label>
+          <div className="flex gap-1 lg:gap-1.5">
             <input
               type="text"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               placeholder="Enter tag name..."
-              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+              className="flex-1 px-2 lg:px-2.5 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all text-xs"
               onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
             />
             <button
               onClick={handleAddTag}
               disabled={loading || !newTag.trim()}
-              className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+              className="px-3 lg:px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs flex-shrink-0"
             >
               {loading ? "Adding..." : "Add"}
             </button>
@@ -121,18 +121,18 @@ const TagsPage: React.FC = () => {
         </div>
 
         {/* Tags Table */}
-        <div className="bg-slate-800 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden shadow-xl flex-1 flex flex-col min-h-0">
+        <div className="bg-slate-800 backdrop-blur-sm rounded-lg border border-slate-700 overflow-hidden shadow-xl flex-1 flex flex-col min-h-0">
           <div className="overflow-auto flex-1">
             <table className="w-full">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gradient-to-r from-indigo-700 to-purple-700 border-b border-indigo-600">
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-2 lg:px-3 py-1.5 lg:py-2 text-left text-[10px] lg:text-xs font-semibold text-white uppercase tracking-wider">
                     #
                   </th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-2 lg:px-3 py-1.5 lg:py-2 text-left text-[10px] lg:text-xs font-semibold text-white uppercase tracking-wider">
                     Tag Name
                   </th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-2 lg:px-3 py-1.5 lg:py-2 text-right text-[10px] lg:text-xs font-semibold text-white uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -140,41 +140,41 @@ const TagsPage: React.FC = () => {
               <tbody className="divide-y divide-slate-700">
                 {tags.map((tag, index) => (
                   <tr key={tag.id} className="hover:bg-indigo-900/20 transition-colors">
-                    <td className="px-4 py-2">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white text-xs font-medium">
+                    <td className="px-2 lg:px-3 py-1.5 lg:py-2">
+                      <span className="inline-flex items-center justify-center w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white text-[10px] lg:text-xs font-medium">
                         {index + 1}
                       </span>
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-2 lg:px-3 py-1.5 lg:py-2">
                       {editingTag?.id === tag.id && editingTag ? (
                         <input
                           type="text"
                           value={editingTag.tag}
                           onChange={(e) => setEditingTag({ ...editingTag, tag: e.target.value })}
-                          className="px-2 py-1.5 bg-slate-700 border border-indigo-500 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full max-w-md text-sm"
+                          className="px-2 py-1 lg:py-1.5 bg-slate-700 border border-indigo-500 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full max-w-md text-xs"
                           onKeyPress={(e) => e.key === 'Enter' && handleUpdateTag()}
                         />
                       ) : (
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-900 to-purple-900 text-indigo-300 font-medium border border-indigo-700 text-xs">
+                        <span className="inline-flex items-center px-2 lg:px-2.5 py-1 lg:py-1.5 rounded-lg bg-gradient-to-r from-indigo-900 to-purple-900 text-indigo-300 font-medium border border-indigo-700 text-[10px] lg:text-xs">
                           {tag.tag}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-right">
-                      <div className="flex justify-end gap-1.5">
+                    <td className="px-2 lg:px-3 py-1.5 lg:py-2 text-right">
+                      <div className="flex justify-end gap-1">
                         {editingTag?.id === tag.id ? (
                           <>
                             <button
                               onClick={handleUpdateTag}
                               disabled={loading}
-                              className="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-xs font-medium hover:shadow-lg disabled:opacity-50 transition-all"
+                              className="px-2 lg:px-2.5 py-1 lg:py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-[10px] lg:text-xs font-medium hover:shadow-lg disabled:opacity-50 transition-all"
                             >
                               Save
                             </button>
                             <button
                               onClick={() => setEditingTag(null)}
                               disabled={loading}
-                              className="px-3 py-1.5 bg-slate-700 text-slate-200 rounded-lg text-xs font-medium hover:bg-slate-600 disabled:opacity-50 transition-all"
+                              className="px-2 lg:px-2.5 py-1 lg:py-1.5 bg-slate-700 text-slate-200 rounded-lg text-[10px] lg:text-xs font-medium hover:bg-slate-600 disabled:opacity-50 transition-all"
                             >
                               Cancel
                             </button>
@@ -184,14 +184,14 @@ const TagsPage: React.FC = () => {
                             <button
                               onClick={() => setEditingTag({ id: tag.id, tag: tag.tag })}
                               disabled={loading}
-                              className="px-3 py-1.5 bg-indigo-900 text-indigo-300 border border-indigo-700 rounded-lg text-xs font-medium hover:bg-indigo-800 disabled:opacity-50 transition-all"
+                              className="px-2 lg:px-2.5 py-1 lg:py-1.5 bg-indigo-900 text-indigo-300 border border-indigo-700 rounded-lg text-[10px] lg:text-xs font-medium hover:bg-indigo-800 disabled:opacity-50 transition-all"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteTag(tag.id)}
                               disabled={loading}
-                              className="px-3 py-1.5 bg-purple-900 text-purple-300 border border-purple-700 rounded-lg text-xs font-medium hover:bg-purple-800 disabled:opacity-50 transition-all"
+                              className="px-2 lg:px-2.5 py-1 lg:py-1.5 bg-purple-900 text-purple-300 border border-purple-700 rounded-lg text-[10px] lg:text-xs font-medium hover:bg-purple-800 disabled:opacity-50 transition-all"
                             >
                               Delete
                             </button>
@@ -204,13 +204,13 @@ const TagsPage: React.FC = () => {
               </tbody>
             </table>
             {tags.length === 0 && (
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-900 mb-3">
-                  <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-8 lg:py-12">
+                <div className="inline-flex items-center justify-center w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-indigo-900 mb-2 lg:mb-3">
+                  <svg className="w-6 h-6 lg:w-7 lg:h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                 </div>
-                <p className="text-slate-400 text-sm">No tags yet. Create your first tag above!</p>
+                <p className="text-slate-400 text-xs lg:text-sm">No tags yet. Create your first tag above!</p>
               </div>
             )}
           </div>

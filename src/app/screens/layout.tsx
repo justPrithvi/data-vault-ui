@@ -4,12 +4,13 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Sidebar from "./sidebar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PageHeaderProvider, usePageHeader } from "@/context/PageHeaderContext";
 import PageHeader from "@/components/PageHeader";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { headerConfig, searchQuery, setSearchQuery } = usePageHeader();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -19,20 +20,28 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden">
-      {headerConfig && (
-        <div className="px-5 pt-5 pb-4 flex-shrink-0 h-[124px]">
-          <PageHeader 
-            {...headerConfig} 
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-          />
+    <>
+      <Sidebar 
+        isMobileOpen={isMobileSidebarOpen} 
+        onMobileClose={() => setIsMobileSidebarOpen(false)}
+      />
+      
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {headerConfig && (
+          <div className="px-2 lg:px-4 pt-2 lg:pt-4 pb-2 lg:pb-3 flex-shrink-0">
+            <PageHeader 
+              {...headerConfig} 
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              onMenuClick={() => setIsMobileSidebarOpen(true)}
+            />
+          </div>
+        )}
+        <div className="flex-1 overflow-hidden min-h-0 px-2 lg:px-4 pb-2 lg:pb-4">
+          {children}
         </div>
-      )}
-      <div className="flex-1 overflow-hidden min-h-0 px-5 pb-5">
-        {children}
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
 
@@ -51,7 +60,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <PageHeaderProvider>
       <div style={{ display: "flex", height: "100vh" }}>
-        <Sidebar />
         <LayoutContent>{children}</LayoutContent>
       </div>
     </PageHeaderProvider>
