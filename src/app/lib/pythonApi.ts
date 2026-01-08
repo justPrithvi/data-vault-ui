@@ -35,21 +35,52 @@ export const uploadDocumentToPython = async (
 };
 
 /**
+ * Get all conversations for the current user
+ * @returns Promise with the conversations list
+ */
+export const getConversations = async (): Promise<any> => {
+  try {
+    const response = await pythonApi.get("/api/conversations");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch conversations:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get conversation history by ID
+ * @param conversationId - The conversation ID
+ * @returns Promise with the conversation messages
+ */
+export const getConversationHistory = async (conversationId: string): Promise<any> => {
+  try {
+    const response = await pythonApi.get(`/api/chat/${conversationId}/history`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch conversation history:", error);
+    throw error;
+  }
+};
+
+/**
  * Send chat message to Python RAG service
  * @param message - The user's message
- * @param conversationId - The conversation ID
+ * @param conversationId - The conversation ID (null for new conversations, backend will generate one)
  * @param userId - The user ID
- * @returns Promise with the response data
+ * @returns Promise with the response data (includes conversationId from backend)
  */
 export const sendChatMessage = async (
   message: string,
-  conversationId: number,
-  userId?: number
+  conversationId: string | null,
+  userId?: string
 ): Promise<any> => {
   try {
+    // TODO: Update endpoint path when final endpoint is provided
+    // Current: POST /api/chat
     const response = await pythonApi.post("/api/chat", {
       message,
-      conversationId,
+      conversationId, // null for new conversations, Python generates and returns ID
       userId,
     });
 
@@ -66,5 +97,7 @@ export { pythonApi };
 export default {
   uploadDocumentToPython,
   sendChatMessage,
+  getConversations,
+  getConversationHistory,
 };
 
