@@ -23,6 +23,7 @@ export default function DocumentPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Set header config for document page
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function DocumentPage() {
     });
   }, [setHeaderConfig]);
 
-  // Fetch on mount, when page changes, or search query changes
+  // Fetch on mount, when page changes, search query changes, or refreshTrigger changes
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -68,7 +69,7 @@ export default function DocumentPage() {
     }, 300); // Debounce search by 300ms
 
     return () => clearTimeout(delayDebounce);
-  }, [authContextLoading, user, currentPage, limit, searchQuery]);
+  }, [authContextLoading, user, currentPage, limit, searchQuery, refreshTrigger]);
   
   return (
     <>
@@ -327,6 +328,7 @@ export default function DocumentPage() {
         onClose={() => setShowModal(false)}
         onUploaded={() => {
           setCurrentPage(1); // Go to first page after upload
+          setRefreshTrigger(prev => prev + 1); // Trigger immediate refetch
         }}
       />
 

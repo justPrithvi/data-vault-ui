@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import api from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
 import { usePageHeader } from "@/context/PageHeaderContext";
+import { sendDocumentChatMessage, getDocumentChatHistory } from "@/app/lib/pythonApi";
 
 interface Tag {
   id: number;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<{role: string; message: string}[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const docsPerPage = 5;
   const [mobileView, setMobileView] = useState<'documents' | 'chat'>('documents');
@@ -51,27 +53,54 @@ export default function DashboardPage() {
     });
   }, [user?.name, setHeaderConfig]);
 
+  // Fetch documents and tags
+  const fetchData = async () => {
+    if (!authContextLoading && user) {
+      try {
+        setLoading(true);
+        // Admin users see all documents, regular users see only their own
+        const userParam = user.isAdmin ? 'all' : user.email;
+        const [docsRes, tagsRes] = await Promise.all([
+          api.get(`/documents/${userParam}`, { params: { limit: 1000 } }),
+          api.get('/internal/tags'),
+        ]);
+        
+        setDocuments(docsRes.data.data || []);
+        setTags(tagsRes.data || []);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Initial fetch on mount
   useEffect(() => {
-    const fetchData = async () => {
-      if (!authContextLoading && user) {
-        try {
-          // Admin users see all documents, regular users see only their own
-          const userParam = user.isAdmin ? 'all' : user.email;
-          const [docsRes, tagsRes] = await Promise.all([
-            api.get(`/documents/${userParam}`, { params: { limit: 1000 } }),
-            api.get('/internal/tags'),
-          ]);
-          
-          setDocuments(docsRes.data.data || []);
-          setTags(tagsRes.data || []);
-        } catch (err) {
-          console.error('Error fetching dashboard data:', err);
-        } finally {
-          setLoading(false);
-        }
+    fetchData();
+  }, [authContextLoading, user]);
+
+  // Refetch when window gains focus (user comes back to this page)
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Window focused - refetching documents...');
+      fetchData();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page visible - refetching documents...');
+        fetchData();
       }
     };
-    fetchData();
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [authContextLoading, user]);
 
   // Filter documents by selected tag and search query
@@ -96,24 +125,98 @@ export default function DashboardPage() {
     count: documents.filter(doc => doc.tags?.some(t => t.id === tag.id)).length
   }));
 
-  const handleDocumentClick = (doc: Document) => {
+  const handleDocumentClick = async (doc: Document) => {
     setSelectedDocument(doc);
     setChatOpen(true);
-    setChatHistory([
-      { role: "system", message: `Chat started for document: ${doc.fileName}` }
-    ]);
-    // Switch to chat view on mobile
     setMobileView('chat');
+    
+    // Show loading state
+    setChatHistory([
+      { role: "system", message: `Loading chat history for: ${doc.fileName}` }
+    ]);
+    
+    // Fetch chat history from backend
+    if (user) {
+      try {
+        const historyData = await getDocumentChatHistory(doc.id, user.id.toString());
+        
+        console.log('Document chat history:', historyData);
+        
+        // Map backend messages to frontend format
+        // Backend uses "agent" role, frontend uses "assistant"
+        if (historyData.messages && historyData.messages.length > 0) {
+          const formattedMessages = historyData.messages.map((msg: any) => ({
+            role: msg.role === 'agent' ? 'assistant' : msg.role,
+            message: msg.content
+          }));
+          setChatHistory(formattedMessages);
+        } else {
+          // No previous messages, show welcome message
+          setChatHistory([
+            { role: "system", message: `Chat started for document: ${doc.fileName}` }
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
+        // On error, show welcome message
+        setChatHistory([
+          { role: "system", message: `Chat started for document: ${doc.fileName}` }
+        ]);
+      }
+    }
   };
 
-  const handleSendMessage = () => {
-    if (!chatMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim() || !selectedDocument || !user) return;
     
-    setChatHistory([...chatHistory, 
-      { role: "user", message: chatMessage },
-      { role: "assistant", message: "This is a mock response. Python service will be integrated later." }
-    ]);
+    const currentMessage = chatMessage;
+    
+    // Add user message to UI immediately
+    setChatHistory(prev => [...prev, { 
+      role: "user", 
+      message: currentMessage 
+    }]);
     setChatMessage("");
+    setIsChatLoading(true);
+
+    try {
+      // Send to Python RAG service
+      const response = await sendDocumentChatMessage(
+        currentMessage,
+        selectedDocument.id,  // Document ID as conversation identifier
+        user.id.toString()     // User ID
+      );
+      
+
+      // Add assistant response
+      setChatHistory(prev => [...prev, {
+        role: "assistant",
+        message: response.response || response.answer || "Response received successfully."
+      }]);
+    } catch (error: any) {
+      console.error("Document chat failed:", error);
+      
+      // Determine error message based on error type
+      let errorMessage = "⚠️ Sorry, I encountered an error processing your request.";
+      
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 404) {
+          errorMessage = "⚠️ Python AI service not found. Please ensure the service is running.";
+        } else if (status === 500) {
+          errorMessage = "⚠️ Server error occurred. Please try again later.";
+        }
+      } else if (error.request) {
+        errorMessage = "⚠️ Cannot connect to AI service. Please check if Python service is running.";
+      }
+      
+      setChatHistory(prev => [...prev, {
+        role: "assistant",
+        message: errorMessage
+      }]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   return (
@@ -355,24 +458,41 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex-1 min-h-0 overflow-y-auto p-2 lg:p-3 space-y-1.5 lg:space-y-2 bg-slate-900">
-                  {chatHistory.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+                  {chatHistory.map((msg, idx) => {
+                    const isError = msg.role === 'assistant' && msg.message.startsWith('⚠️');
+                    return (
                       <div
-                        className={`max-w-[85%] sm:max-w-[75%] px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg text-xs ${
-                          msg.role === 'user'
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white'
-                            : msg.role === 'system'
-                            ? 'bg-slate-700 text-slate-300 text-[10px] lg:text-xs italic'
-                            : 'bg-slate-700 text-slate-200'
-                        }`}
+                        key={idx}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        {msg.message}
+                        <div
+                          className={`max-w-[85%] sm:max-w-[75%] px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg text-xs ${
+                            msg.role === 'user'
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white'
+                              : msg.role === 'system'
+                              ? 'bg-slate-700 text-slate-300 text-[10px] lg:text-xs italic'
+                              : isError
+                              ? 'bg-red-900/30 border border-red-700/40 text-red-200'
+                              : 'bg-slate-700 text-slate-200'
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg bg-slate-700">
+                        <div className="flex gap-1">
+                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 <div className="p-1.5 lg:p-2 border-t border-slate-700 bg-slate-800 flex-shrink-0">
@@ -381,15 +501,17 @@ export default function DashboardPage() {
                       type="text"
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && handleSendMessage()}
                       placeholder="Ask about this document..."
-                      className="flex-1 px-2 lg:px-2.5 py-1.5 border border-slate-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-700 text-slate-100 placeholder-slate-400 text-xs"
+                      disabled={isChatLoading}
+                      className="flex-1 px-2 lg:px-2.5 py-1.5 border border-slate-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-700 text-slate-100 placeholder-slate-400 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <button
                       onClick={handleSendMessage}
-                      className="px-2.5 lg:px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-xs"
+                      disabled={isChatLoading || !chatMessage.trim()}
+                      className="px-2.5 lg:px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Send
+                      {isChatLoading ? 'Sending...' : 'Send'}
                     </button>
                   </div>
                   

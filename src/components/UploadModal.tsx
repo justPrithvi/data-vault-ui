@@ -99,13 +99,44 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-[500px] border-2 border-purple-200 animate-in zoom-in duration-200">
+      {/* Loading Overlay - Shows during upload */}
+      {loading && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[60] animate-in fade-in duration-200">
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 lg:p-12 shadow-2xl border border-white/20 flex flex-col items-center gap-6">
+            {/* Spinner */}
+            <div className="relative">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 border-4 border-purple-200/30 border-t-purple-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-16 h-16 lg:w-20 lg:h-20 border-4 border-transparent border-b-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+            </div>
+            
+            {/* Upload status */}
+            <div className="text-center space-y-2">
+              <h3 className="text-xl lg:text-2xl font-bold text-white">Uploading Document</h3>
+              <p className="text-sm lg:text-base text-purple-200">Please wait while we process your file...</p>
+              {file && (
+                <p className="text-xs lg:text-sm text-white/70 font-medium mt-3 max-w-xs truncate">
+                  {file.name}
+                </p>
+              )}
+            </div>
+            
+            {/* Progress indicator */}
+            <div className="flex gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white p-6 lg:p-8 rounded-2xl shadow-2xl w-[90%] max-w-[500px] border-2 border-purple-200 animate-in zoom-in duration-200">
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl">📤</span>
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-xl lg:text-2xl">📤</span>
           </div>
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h2 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Upload Document
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">Select a file and add tags</p>
@@ -119,12 +150,13 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
             <input
               type="file"
               onChange={handleFileChange}
-              className="w-full border-2 border-dashed border-purple-300 rounded-xl px-4 py-8 text-sm bg-purple-50/50 hover:bg-purple-50 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-600 file:text-white hover:file:scale-105 file:transition-transform"
+              disabled={loading}
+              className="w-full border-2 border-dashed border-purple-300 rounded-xl px-4 py-6 lg:py-8 text-xs lg:text-sm bg-purple-50/50 hover:bg-purple-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs lg:file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-600 file:text-white hover:file:scale-105 file:transition-transform"
             />
             {file && (
               <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
                 <span className="text-green-600">✓</span>
-                <span className="text-sm text-green-700 font-medium truncate">{file.name}</span>
+                <span className="text-xs lg:text-sm text-green-700 font-medium truncate">{file.name}</span>
               </div>
             )}
           </div>
@@ -151,7 +183,8 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
                 <button
                   key={tag.id}
                   onClick={() => toggleTag(tag.id)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
+                  disabled={loading}
+                  className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl text-xs lg:text-sm font-medium border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     selectedTagIds.includes(tag.id)
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-600 shadow-lg scale-105"
                       : "bg-white text-slate-700 border-slate-200 hover:border-purple-400 hover:bg-purple-50"
@@ -163,21 +196,21 @@ const UploadModal = ({ isOpen, onClose, onUploaded }: UploadModalProps) => {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500 italic p-3 bg-slate-50 rounded-lg">No tags available. Please create one first.</p>
+            <p className="text-xs lg:text-sm text-slate-500 italic p-3 bg-slate-50 rounded-lg">No tags available. Please create one first.</p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+        <div className="flex justify-end gap-2 lg:gap-3 pt-4 border-t border-slate-200">
           <button
-            className="px-6 py-3 rounded-xl bg-slate-200 text-slate-700 font-semibold hover:bg-slate-300 transition-all hover:scale-105"
+            className="px-4 lg:px-6 py-2 lg:py-3 rounded-xl bg-slate-200 text-slate-700 text-sm lg:text-base font-semibold hover:bg-slate-300 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
             disabled={loading}
           >
             Cancel
           </button>
           <button
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center gap-2"
+            className="px-4 lg:px-6 py-2 lg:py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white text-sm lg:text-base font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center gap-2"
             onClick={handleUpload}
             disabled={loading || !file || selectedTagIds.length === 0}
           >

@@ -94,12 +94,65 @@ export const sendChatMessage = async (
   }
 };
 
+/**
+ * Send chat message about a specific document
+ * @param message - The user's message
+ * @param documentId - The document ID (also serves as conversation identifier)
+ * @param userId - The user ID
+ * @returns Promise with the response data
+ */
+export const sendDocumentChatMessage = async (
+  message: string,
+  documentId: number,
+  userId: string
+): Promise<any> => {
+  try {
+    const response = await pythonApi.post("/api/chat/document", {
+      message,
+      documentId,  // Document ID acts as conversation identifier
+      userId,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Python document chat failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get chat history for a specific document
+ * @param documentId - The document ID
+ * @param userId - The user ID
+ * @returns Promise with the chat history data
+ */
+export const getDocumentChatHistory = async (
+  documentId: number,
+  userId: string
+): Promise<any> => {
+  try {
+    const response = await pythonApi.get("/api/document-chat/history", {
+      params: {
+        documentId,
+        userId,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch document chat history:", error);
+    throw error;
+  }
+};
+
 // Export the axios instance for direct access if needed
 export { pythonApi };
 
 export default {
   uploadDocumentToPython,
   sendChatMessage,
+  sendDocumentChatMessage,
+  getDocumentChatHistory,
   getConversations,
   getConversationHistory,
 };
